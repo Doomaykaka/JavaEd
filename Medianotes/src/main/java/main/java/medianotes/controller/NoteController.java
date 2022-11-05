@@ -29,12 +29,11 @@ public class NoteController {
 																					// хранения записок
 	private static final FolderRepository folderRepository = new FolderRepositoryImpl(); // создаём объект интерфейса
 																							// для хранения папок
-	private static int user_id; // поле с id вошедшего пользователя
 
 	// методы
 
 	// проверяем данные аккаунта пользователя
-	private int CheckLogin(HttpServletRequest req) throws IOException {
+	private String[] CheckLogin(HttpServletRequest req) throws IOException {
 		int status = -1;
 
 		Cookie[] cookies = req.getCookies();
@@ -57,28 +56,35 @@ public class NoteController {
 				}
 			}
 		}
+		
+		status = Authentication.findAccount(cookieLogin.getValue() + " " + cookiepassword.getValue());
 
-		Authentication auth = new Authentication();
-		status = auth.findAccount(cookieLogin.getValue() + " " + cookiepassword.getValue());
+		int user_id = Integer.parseInt(cookieid.getValue());
+		
+		String[] data = new String[2];
+		
+		data[0] = Integer.toString(status);
+		data[1] = Integer.toString(user_id);
 
-		user_id = Integer.parseInt(cookieid.getValue());
-
-		return status;
+		return data;
 	}
 
 	// отображаем все записки пользователя
 	@RequestMapping(value = "/viewNotes", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
 	protected void ViewNotes(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		List<Note> notes = noteRepository.getAllNotes(user_id); // получаем список всех записок
-		resp.setContentType("text/html");
-
 		PrintWriter writer = resp.getWriter();
 
 		try {
 			writer.println("<html><head><title>ViewNotes</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}#block{border: 1em solid #051373; border-radius: 1em;background: #051373;display: inline-block;}</style>");
 
-			if (CheckLogin(req) != -1) {
+			String[] data = CheckLogin(req);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				List<Note> notes = noteRepository.getAllNotes(user_id); // получаем список всех записок
+				resp.setContentType("text/html");
+				
 				writer.println("<h2>Notes</h2>");
 				for (Note note : notes) { // выводим их содержимое
 					writer.println("<p></p><div id=\"block\">");
@@ -105,16 +111,21 @@ public class NoteController {
 	// отображаем страницу изменения статуса записки
 	@RequestMapping(value = "/statusNote", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
 	protected void StatusNoteSetGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String name = req.getParameter("name");
 		resp.setContentType("text/html");
 		PrintWriter writer = resp.getWriter();
-		List<Note> notes = noteRepository.getAllNotes(user_id); // получаем список всех записок
 
 		try {
 			writer.println("<html><head><title>StatusNote</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (CheckLogin(req) != -1) {
+			String[] data = CheckLogin(req);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String name = req.getParameter("name");
+				
+				List<Note> notes = noteRepository.getAllNotes(user_id); // получаем список всех записок
+				
 				boolean find=false;
 				for (Note note : notes) { 
 					if(note.getName().equals(name)) {
@@ -154,8 +165,6 @@ public class NoteController {
 	// обрабатываем данные для изменения статуса записки
 	@RequestMapping(value = "/statusNote", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.POST)
 	protected void StatusNoteSetPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String notename = request.getParameter("nname");
-		String notestatus = request.getParameter("nstatus");
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
@@ -163,7 +172,13 @@ public class NoteController {
 			out.println("<html><head><title>StatusNote</title></head><body>");
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (user_id != -1) {
+			String[] data = CheckLogin(request);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String notename = request.getParameter("nname");
+				String notestatus = request.getParameter("nstatus");
+				
 				if(notename.equals(null)||notename.equals("")||notename.replaceAll(" ","").equals("")||notename.replaceAll("	","").equals("")||notestatus.equals(null)||notestatus.equals("")||notestatus.replaceAll(" ","").equals("")||notestatus.replaceAll("	","").equals("")) {
 					response.sendRedirect(request.getContextPath() + "/");
 				}else {
@@ -195,7 +210,6 @@ public class NoteController {
 	// отображаем страницу создания записки
 	@RequestMapping(value = "/createNote", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
 	protected void CreateNoteGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String parfol = req.getParameter("curr");
 		resp.setContentType("text/html");
 		PrintWriter writer = resp.getWriter();
 
@@ -203,7 +217,12 @@ public class NoteController {
 			writer.println("<html><head><title>CreateNote</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (CheckLogin(req) != -1) {
+			String[] data = CheckLogin(req);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String parfol = req.getParameter("curr");
+				
 				writer.println("<h2>Note</h2>");
 
 				writer.println("<form action=\"\" method=\"post\">");
@@ -231,10 +250,6 @@ public class NoteController {
 	// обрабатываем данные для создания записки
 	@RequestMapping(value = "/createNote", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.POST)
 	protected void CreateNotePost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String notename = request.getParameter("nname");
-		String noteauthor = request.getParameter("nauthor");
-		String notefolder = request.getParameter("nfolder");
-		String notetext = request.getParameter("ntext");
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
@@ -242,7 +257,15 @@ public class NoteController {
 			out.println("<html><head><title>CreateNote</title></head><body>");
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (user_id != -1) {
+			String[] data = CheckLogin(request);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				
+				String notename = request.getParameter("nname");
+				String noteauthor = request.getParameter("nauthor");
+				String notefolder = request.getParameter("nfolder");
+				String notetext = request.getParameter("ntext");
 				
 				if(!(notename.equals(null))&&!(noteauthor.equals(null))&&!notename.equals("")&&!notename.replaceAll(" ","").equals("")&&!notename.replaceAll("	","").equals("")&&!noteauthor.equals("")&&!noteauthor.replaceAll(" ","").equals("")&&!noteauthor.replaceAll("	","").equals("")) {
 					Folder falderRes = new Folder("", null, user_id);
@@ -286,7 +309,6 @@ public class NoteController {
 	// отображаем страницу изменения записки
 	@RequestMapping(value = "/editNote", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
 	protected void EditNoteGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String name = req.getParameter("name");
 		resp.setContentType("text/html");
 		PrintWriter writer = resp.getWriter();
 
@@ -294,7 +316,12 @@ public class NoteController {
 			writer.println("<html><head><title>EditNote</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (CheckLogin(req) != -1) {
+			String[] data = CheckLogin(req);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String name = req.getParameter("name");
+				
 				writer.println("<h2>Note</h2>");
 
 				writer.println("<form action=\"\" method=\"post\">");
@@ -323,10 +350,6 @@ public class NoteController {
 	// обрабатываем данные для изменения записки
 	@RequestMapping(value = "/editNote", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.POST)
 	protected void EditNotePost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String notename = request.getParameter("nname");
-		String noteauthor = request.getParameter("nauthor");
-		String notefolder = request.getParameter("nfolder");
-		String notetext = request.getParameter("ntext");
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
@@ -334,7 +357,15 @@ public class NoteController {
 			out.println("<html><head><title>EditNote</title></head><body>");
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (user_id != -1) {
+			String[] data = CheckLogin(request);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String notename = request.getParameter("nname");
+				String noteauthor = request.getParameter("nauthor");
+				String notefolder = request.getParameter("nfolder");
+				String notetext = request.getParameter("ntext");
+				
 				if(notename.equals(null)||noteauthor.equals(null)||notetext.equals(null)||notename.equals("")||notename.replaceAll(" ","").equals("")||notename.replaceAll("	","").equals("")||noteauthor.equals("")||noteauthor.replaceAll(" ","").equals("")||noteauthor.replaceAll("	","").equals("")||notetext.equals("")||notetext.replaceAll(" ","").equals("")||notetext.replaceAll("	","").equals("")) {
 					response.sendRedirect(request.getContextPath() + "/");
 				}else {
@@ -381,7 +412,6 @@ public class NoteController {
 	// отображаем страницу удаления записки
 	@RequestMapping(value = "/deleteNote", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
 	protected void DeleteNoteGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String name = req.getParameter("name");
 		resp.setContentType("text/html");
 		PrintWriter writer = resp.getWriter();
 
@@ -389,7 +419,12 @@ public class NoteController {
 			writer.println("<html><head><title>DeleteNote</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (CheckLogin(req) != -1) {
+			String[] data = CheckLogin(req);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String name = req.getParameter("name");
+				
 				if(name.equals(null)||name.equals("")||name.replaceAll(" ","").equals("")||name.replaceAll("	","").equals("")) {
 					resp.sendRedirect(req.getContextPath() + "/");
 				}else {
@@ -417,14 +452,18 @@ public class NoteController {
 	// обрабатываем данные для удаления записки
 	@RequestMapping(value = "/deleteNote", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.POST)
 	protected void DeleteNotePost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String name = request.getParameter("nname");
 		PrintWriter writer = response.getWriter();
 
 		try {
 			writer.println("<html><head><title>DeleteNote</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (user_id != -1) {
+			String[] data = CheckLogin(request);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String name = request.getParameter("nname");
+				
 				if(name.equals(null)||name.equals("")||name.replaceAll(" ","").equals("")||name.replaceAll("	","").equals("")) {
 					response.sendRedirect(request.getContextPath() + "/");
 				}else {

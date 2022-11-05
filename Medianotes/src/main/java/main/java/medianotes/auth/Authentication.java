@@ -77,7 +77,7 @@ public class Authentication {
 	}
 
 	// метод класса отвечающий за поиск введённых данных в базе
-	public int findAccount(String accdat) {
+	public static int findAccount(String accdat) {
 		int finded_id = -1; // переменная хранящая id результата поиска объекта
 		String LOGINandPASSWORD = ""; // переменная хранящая логин и пароль аккаунта
 		
@@ -124,6 +124,7 @@ public class Authentication {
 	
 	// геттер базы аккаунтов
 	public static String[] getAccounts() {
+		readAuthentificationData(); // читаем данные аккаунтов
 		return vLOGINandPASSWORDandID;
 	}
 }

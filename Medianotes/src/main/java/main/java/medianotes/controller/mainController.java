@@ -68,7 +68,6 @@ public class mainController {
 		String regpwordrep = request.getParameter("Rpas2");
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
-		Authentication auth = new Authentication();
 
 		try {
 			Class.forName("org.postgresql.Driver");
@@ -81,7 +80,7 @@ public class mainController {
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if ((uname != null) && (pword != null)) {
-				int login_id = auth.findAccount(uname + " " + pword);
+				int login_id = Authentication.findAccount(uname + " " + pword);
 
 				if (login_id != -1) {
 					out.println("<p>Hello " + uname + "</p>");
@@ -96,8 +95,8 @@ public class mainController {
 			} else {
 				if ((regname != null) && (regpword != null) && (regpwordrep != null)) {
 					if (regpword.equals(regpwordrep)) { // проверяем правильность пароля
-						auth.readAuthentificationData();
-						String[] vLOGINandPASSWORDandID = auth.getAccounts();
+						Authentication.readAuthentificationData();
+						String[] vLOGINandPASSWORDandID = Authentication.getAccounts();
 						boolean loginUsingLever;
 						loginUsingLever = false;
 
@@ -114,7 +113,7 @@ public class mainController {
 																				// аккаунта
 							out.println("<a href=\"" + request.getContextPath() + "/\">Go to start page</a>");
 						} else {
-							auth.registerAccount(regname + " " + regpword); // регистрируем аккаунт
+							Authentication.registerAccount(regname + " " + regpword); // регистрируем аккаунт
 							out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
 						}
 					} else {

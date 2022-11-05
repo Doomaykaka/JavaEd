@@ -23,19 +23,15 @@ import main.java.medianotes.repository.impl.NoteRepositoryImpl;
 @RestController
 public class menuController {
 	// поля
-
 	private static final NoteRepository noteRepository = new NoteRepositoryImpl(); // создаём объект интерфейса для
 																					// хранения запсок
 	private static final FolderRepository folderRepository = new FolderRepositoryImpl(); // создаём объект интерфейса
 																							// для хранения запсок
-	private String name = "";
-
-	private static int user_id; // поле с id вошедшего пользователя
 
 	// методы
 
 	// проверяем данные аккаунта пользователя
-	private int CheckLogin(HttpServletRequest req) throws IOException {
+	private String[] CheckLogin(HttpServletRequest req) throws IOException {
 		int status = -1;
 
 		Cookie[] cookies = req.getCookies();
@@ -59,14 +55,16 @@ public class menuController {
 			}
 		}
 
-		Authentication auth = new Authentication();
-		status = auth.findAccount(cookieLogin.getValue() + " " + cookiepassword.getValue());
+		status = Authentication.findAccount(cookieLogin.getValue() + " " + cookiepassword.getValue());
+		
+		int user_id = Integer.parseInt(cookieid.getValue());
+		
+		String[] data = new String[2];
+		
+		data[0] = Integer.toString(status);
+		data[1] = Integer.toString(user_id);
 
-		user_id = Integer.parseInt(cookieid.getValue());
-
-		name = cookieLogin.getValue();
-
-		return status;
+		return data;
 	}
 
 	// отображаем страницу с меню
@@ -79,8 +77,11 @@ public class menuController {
 			writer.println("<html><head><title>Menu</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}#list{border: 1em solid #1158c2; border-radius: 2em;background: #1158c2;display: inline-block;}#block{border: 1em solid #051373; border-radius: 1em;background: #051373;display: inline-block;}</style>");
 
-			if (CheckLogin(req) != -1) {
-				writer.println("<p>Hello " + name + "</p>");
+			String[] data = CheckLogin(req);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				writer.println("<p>Hello user with id "+Integer.toString(user_id)+"</p>");
 				writer.println("<p><a href=\"" + req.getContextPath() + "/\">LogOut</a></p>");
 				writer.println("<div id=\"block\">");
 				writer.println("<h2>Folders</h2>");
@@ -200,14 +201,17 @@ public class menuController {
 	// обрабатываем страницу с меню
 	@RequestMapping(value = "/menu", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.POST)
 	public void RedirectMenu(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String fname = request.getParameter("go");
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
 		try {
 			out.println("<html><head><title>Menu</title></head><body>");
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
-			if (user_id != -1) {
+			String[] data = CheckLogin(request);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String fname = request.getParameter("go");
 				folderRepository.setCurrent(fname, user_id);
 				response.sendRedirect(request.getContextPath() + "/menu");
 			} else {

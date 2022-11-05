@@ -29,12 +29,10 @@ public class FolderController {
 																					// хранения запсок
 	private static final FolderRepository folderRepository = new FolderRepositoryImpl(); // создаём объект интерфейса
 
-	private static int user_id; // поле с id вошедшего пользователя
-
 	// методы
 
 	// проверяем данные аккаунта пользователя
-	private int CheckLogin(HttpServletRequest req) throws IOException {
+	private String[] CheckLogin(HttpServletRequest req) throws IOException {
 		int status = -1;
 
 		Cookie[] cookies = req.getCookies();
@@ -58,27 +56,34 @@ public class FolderController {
 			}
 		}
 
-		Authentication auth = new Authentication();
-		status = auth.findAccount(cookieLogin.getValue() + " " + cookiepassword.getValue());
+		status = Authentication.findAccount(cookieLogin.getValue() + " " + cookiepassword.getValue());
 
-		user_id = Integer.parseInt(cookieid.getValue());
+		int user_id = Integer.parseInt(cookieid.getValue());
+		
+		String[] data = new String[2];
+		
+		data[0] = Integer.toString(status);
+		data[1] = Integer.toString(user_id);
 
-		return status;
+		return data;
 	}
 
 	// отображаем все папки пользователя
 	@RequestMapping(value = "/viewFolders", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
 	protected void ViewFolders(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		Set<Folder> folders = folderRepository.getFolders(user_id); // получаем список всех папок
 		resp.setContentType("text/html");
-
 		PrintWriter writer = resp.getWriter();
 
 		try {
 			writer.println("<html><head><title>ViewFolders</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}#block{border: 1em solid #051373; border-radius: 1em;background: #051373;display: inline-block;}</style>");
-
-			if (CheckLogin(req) != -1) {
+			
+			String[] data = CheckLogin(req);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				Set<Folder> folders = folderRepository.getFolders(user_id); // получаем список всех папок
+				
 				writer.println("<h2>Folders</h2>");
 				for (Folder folder : folders) { // выводим их содержимое
 					writer.println("<p></p><div id=\"block\">");
@@ -106,16 +111,19 @@ public class FolderController {
 	@RequestMapping(value = "/createFolder", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
 	protected void CreateFolderGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		String parfol = req.getParameter("curr");
 		resp.setContentType("text/html");
-
 		PrintWriter writer = resp.getWriter();
 
 		try {
 			writer.println("<html><head><title>CreateFolder</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (CheckLogin(req) != -1) {
+			String[] data = CheckLogin(req);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String parfol = req.getParameter("curr");
+				
 				writer.println("<h2>Folder</h2>");
 
 				writer.println("<form action=\"\" method=\"post\">");
@@ -142,8 +150,6 @@ public class FolderController {
 	@RequestMapping(value = "/createFolder", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.POST)
 	protected void CreateFolderPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String folname = request.getParameter("fol");
-		String parentfn = request.getParameter("par");
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
@@ -151,7 +157,13 @@ public class FolderController {
 			out.println("<html><head><title>CreateFolder</title></head><body>");
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (user_id != -1) {
+			String[] data = CheckLogin(request);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String folname = request.getParameter("fol");
+				String parentfn = request.getParameter("par");
+				
 				if((folname.equals(null))||folname.equals("")||folname.replaceAll(" ","").equals("")||folname.replaceAll("	","").equals("")) {
 					response.sendRedirect(request.getContextPath() + "/");
 				}else {
@@ -202,7 +214,6 @@ public class FolderController {
 	@RequestMapping(value = "/deleteFolder", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
 	protected void DeleteFolderGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		String folname = req.getParameter("name");
 		resp.setContentType("text/html");
 		PrintWriter writer = resp.getWriter();
 
@@ -210,7 +221,12 @@ public class FolderController {
 			writer.println("<html><head><title>DeleteFolder</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (CheckLogin(req) != -1) {
+			String[] data = CheckLogin(req);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String folname = req.getParameter("name");
+				
 				writer.println("<h2>Delete folder?</h2>");
 				writer.println("<form action=\"\" method=\"post\">");
 				writer.println("<p>Folder " + folname + "</p>");
@@ -236,14 +252,17 @@ public class FolderController {
 	@RequestMapping(value = "/deleteFolder", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.POST)
 	protected void DeleteFolderPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String folname = request.getParameter("del");
 		PrintWriter writer = response.getWriter();
 
 		try {
 			writer.println("<html><head><title>DeleteFolder</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
-			if (user_id != -1) {
+			String[] data = CheckLogin(request);
+			int user_id = Integer.parseInt(data[1]);
+			int status = Integer.parseInt(data[0]);
+			if (status != -1) {
+				String folname = request.getParameter("del");
 				
 				if((folname.equals(null))||folname.equals("")||folname.replaceAll(" ","").equals("")||folname.replaceAll("	","").equals("")) {
 					response.sendRedirect(request.getContextPath() + "/");
