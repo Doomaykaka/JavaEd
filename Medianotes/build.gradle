@@ -1,0 +1,36 @@
+plugins { 
+	id "org.springframework.boot" version "2.7.1" 
+}
+
+apply plugin: 'java' //подключаем работу с java
+apply plugin: 'eclipse' //подключаем работу с eclipse
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'war'
+
+ext {
+    springBootVersion = '2.7.1'
+}
+
+//указание репозиториев , в которых будут искаться зависимости
+repositories{
+	mavenCentral()
+}
+
+bootJar {
+	mainClass = 'main.java.medianotes.Main'
+	baseName = 'Spring test'
+	version = '0.1.0'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+
+
+//указание зависимостей проекта
+dependencies{
+	implementation files('lib/postgresql-42.4.0.jar')
+	implementation 'org.springframework.boot:spring-boot-starter-web:2.7.1' //Spring framework
+	providedCompile 'org.apache.tomcat:tomcat-catalina:7.0.47'
+}
