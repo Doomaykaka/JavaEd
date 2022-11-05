@@ -108,23 +108,35 @@ public class NoteController {
 		String name = req.getParameter("name");
 		resp.setContentType("text/html");
 		PrintWriter writer = resp.getWriter();
+		List<Note> notes = noteRepository.getAllNotes(user_id); // получаем список всех записок
 
 		try {
 			writer.println("<html><head><title>StatusNote</title></head><body>");
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (CheckLogin(req) != -1) {
-				writer.println("<h2>Note status set</h2>");
-				writer.println("<form action=\"\" method=\"post\">");
-				writer.println("<p>Note status </p>");
-				writer.println(
-						"<p> Completed </p><input type=\"radio\" name=\"nstatus\" id=\"stattype\" value=\"Completed\"></input>");
-				writer.println(
-						"<p> Not completed </p><input type=\"radio\" name=\"nstatus\" id=\"stattype2\" value=\"notCompleted\"></input>");
-				writer.println("<input type=\"hidden\" name=\"nname\" value=\"" + name + "\"></input>");
-				writer.println(
-						"<p></p><button class=\"form_auth_button\" type=\"submit\" name=\"form_auth_submit\">Set</button>");
-				writer.println("</form>");
+				boolean find=false;
+				for (Note note : notes) { 
+					if(note.getName().equals(name)) {
+						find=true;
+					}
+				}
+				
+				if(!find) {
+					writer.println("<a href=\"" + req.getContextPath() + "/menu\">Go to menu</a>");
+				}else {
+					writer.println("<h2>Note status set</h2>");
+					writer.println("<form action=\"\" method=\"post\">");
+					writer.println("<p>Note status </p>");
+					writer.println(
+							"<p> Completed </p><input type=\"radio\" name=\"nstatus\" id=\"stattype\" value=\"Completed\"></input>");
+					writer.println(
+							"<p> Not completed </p><input type=\"radio\" name=\"nstatus\" id=\"stattype2\" value=\"notCompleted\"></input>");
+					writer.println("<input type=\"hidden\" name=\"nname\" value=\"" + name + "\"></input>");
+					writer.println(
+							"<p></p><button class=\"form_auth_button\" type=\"submit\" name=\"form_auth_submit\">Set</button>");
+					writer.println("</form>");
+				}
 			} else {
 				writer.println("<p>Bad cookie</p>");
 				writer.println("<a href=\"" + req.getContextPath() + "/\">Go to start page</a>");
@@ -152,15 +164,20 @@ public class NoteController {
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (user_id != -1) {
-				for (Note note : noteRepository.getAllNotes(user_id)) { // ищем записку
-					if (note.getName().equals(notename)) {
-						note.setStatus(notestatus);
-						noteRepository.edit(note, user_id);
+				if(notename.equals(null)||notestatus.equals(null)) {
+					response.sendRedirect(request.getContextPath() + "/");
+				}else {
+				
+					for (Note note : noteRepository.getAllNotes(user_id)) { // ищем записку
+						if (note.getName().equals(notename)) {
+							note.setStatus(notestatus);
+							noteRepository.edit(note, user_id);
+						}
 					}
-				}
 
-				out.println("Note created "); // выводим информирующее сообщение
-				out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+					out.println("Status created "); // выводим информирующее сообщение
+					out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+				}
 			} else {
 				out.println("<p>Bad cookie</p>");
 				out.println("<a href=\"" + request.getContextPath() + "/\">Go to start page</a>");
@@ -226,26 +243,32 @@ public class NoteController {
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (user_id != -1) {
-				Folder falderRes = new Folder("", null, user_id);
+				
+				if(!(notename.equals(null))&&!(noteauthor.equals(null))) {
+					Folder falderRes = new Folder("", null, user_id);
 
-				boolean res = false; // ищем такую папку и в случае удачи копируем объект
-				for (Folder fal : folderRepository.getFolders(user_id)) {
-					if (fal.getName().equals(notefolder)) {
-						res = true;
-						falderRes = fal;
-						break;
+					boolean res = false; // ищем такую папку и в случае удачи копируем объект
+					for (Folder fal : folderRepository.getFolders(user_id)) {
+						if (fal.getName().equals(notefolder)) {
+							res = true;
+							falderRes = fal;
+							break;
+						}
 					}
-				}
-				if (!res) { // если не нашли , то прекращаем выполнение
-					out.println("<p>Folder not exist</p>");
-				}
+					if (!res) { // если не нашли , то прекращаем выполнение
+						out.println("<p>Folder not exist</p>");
+					}
 
-				Note newNote = new Note(notename, notetext, noteauthor, falderRes, user_id, "notCompleted",
-						Instant.now()); // создаём записку с полученными полями
-				noteRepository.save(newNote, user_id);
+					Note newNote = new Note(notename, notetext, noteauthor, falderRes, user_id, "notCompleted",
+							Instant.now()); // создаём записку с полученными полями
+					noteRepository.save(newNote, user_id);
 
-				out.println("<p>Note created </p>"); // выводим информирующее сообщение
-				out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+					out.println("<p>Note created </p>"); // выводим информирующее сообщение
+					out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+				}else {
+					response.sendRedirect(request.getContextPath() + "/");
+				}
+				
 			} else {
 				out.println("<p>Bad cookie</p>");
 				out.println("<a href=\"" + request.getContextPath() + "/\">Go to start page</a>");
@@ -312,31 +335,35 @@ public class NoteController {
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (user_id != -1) {
-				Folder falderRes = new Folder("", null, user_id);
+				if((notename.equals(null))||(noteauthor.equals(null)||(notetext.equals(null)))) {
+					response.sendRedirect(request.getContextPath() + "/");
+				}else {
+					Folder falderRes = new Folder("", null, user_id);
 
-				boolean res = false; // ищем такую папку и в случае удачи копируем объект
-				for (Folder fal : folderRepository.getFolders(user_id)) {
-					if (fal.getName().equals(notefolder)) {
-						res = true;
-						falderRes = fal;
-						break;
+					boolean res = false; // ищем такую папку и в случае удачи копируем объект
+					for (Folder fal : folderRepository.getFolders(user_id)) {
+						if (fal.getName().equals(notefolder)) {
+							res = true;
+							falderRes = fal;
+							break;
+						}
 					}
-				}
-				if (!res) { // если не нашли , то прекращаем выполнение
-					out.println("<p>Folder not exist</p>");
-				}
-
-				for (Note note : noteRepository.getAllNotes(user_id)) { // ищем записку
-					if (note.getName().equals(notename)) {
-						note.setAuthor(noteauthor);
-						note.setParentFolder(falderRes);
-						note.setText(notetext);
-						noteRepository.edit(note, user_id);
+					if (!res) { // если не нашли , то прекращаем выполнение
+						out.println("<p>Folder not exist</p>");
 					}
-				}
 
-				out.println("<p>Note edited </p>"); // выводим информирующее сообщение
-				out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+					for (Note note : noteRepository.getAllNotes(user_id)) { // ищем записку
+						if (note.getName().equals(notename)) {
+							note.setAuthor(noteauthor);
+							note.setParentFolder(falderRes);
+							note.setText(notetext);
+							noteRepository.edit(note, user_id);
+						}
+					}
+
+					out.println("<p>Note edited </p>"); // выводим информирующее сообщение
+					out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+				}
 			} else {
 				out.println("<p>Bad cookie</p>");
 				out.println("<a href=\"" + request.getContextPath() + "/\">Go to start page</a>");
@@ -363,12 +390,16 @@ public class NoteController {
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (CheckLogin(req) != -1) {
-				writer.println("<h2>Delete note?</h2>");
-				writer.println("<form action=\"\" method=\"post\">");
-				writer.println("<input type=\"hidden\" name=\"nname\" value=\"" + name + "\"></input>");
-				writer.println(
-						"<p></p><button class=\"form_auth_button\" type=\"submit\" name=\"form_auth_submit\">Delete</button>");
-				writer.println("</form>");
+				if(name.equals(null)) {
+					resp.sendRedirect(req.getContextPath() + "/");
+				}else {
+					writer.println("<h2>Delete note?</h2>");
+					writer.println("<form action=\"\" method=\"post\">");
+					writer.println("<input type=\"hidden\" name=\"nname\" value=\"" + name + "\"></input>");
+					writer.println(
+							"<p></p><button class=\"form_auth_button\" type=\"submit\" name=\"form_auth_submit\">Delete</button>");
+					writer.println("</form>");
+				}
 			} else {
 				writer.println("<p>Bad cookie</p>");
 				writer.println("<a href=\"" + req.getContextPath() + "/\">Go to start page</a>");

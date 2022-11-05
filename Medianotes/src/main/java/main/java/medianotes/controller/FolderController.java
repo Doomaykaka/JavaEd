@@ -152,33 +152,38 @@ public class FolderController {
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (user_id != -1) {
-				boolean res2 = true; // ищем такую папку и в случае отсутствия продолжаем работу
-				for (Folder fal : folderRepository.getFolders(user_id)) {
-					if (fal.getName().equals(folname)) {
-						res2 = false;
-						break;
+				if(folname.equals(null)) {
+					response.sendRedirect(request.getContextPath() + "/");
+				}else {
+					boolean res2 = true; // ищем такую папку и в случае отсутствия продолжаем работу
+					for (Folder fal : folderRepository.getFolders(user_id)) {
+						if (fal.getName().equals(folname)) {
+							res2 = false;
+							break;
+						}
+					}
+
+					if (!res2) {
+						out.println("<p>This folder has already been created</p>"); // выводим информирующее сообщение
+						out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+					}else {
+						Folder par; // искомая папка
+
+						folderRepository.setCurrent(parentfn, user_id);
+
+						par = folderRepository.getCurrent(user_id);
+
+						if (par == null) {
+							folderRepository.createFolder(folname, null, user_id);
+							out.println("<p>Folder created</p>"); // выводим информирующее сообщение
+						} else {
+							folderRepository.createFolder(folname, par, user_id);
+							out.println("<p>Folder created</p>"); // выводим информирующее сообщение
+						}
+
+						out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
 					}
 				}
-
-				if (!res2) {
-					out.println("<p>This folder has already been created</p>"); // выводим информирующее сообщение
-				}
-
-				Folder par; // искомая папка
-
-				folderRepository.setCurrent(parentfn, user_id);
-
-				par = folderRepository.getCurrent(user_id);
-
-				if (par == null) {
-					folderRepository.createFolder(folname, null, user_id);
-					out.println("<p>Folder created</p>"); // выводим информирующее сообщение
-				} else {
-					folderRepository.createFolder(folname, par, user_id);
-					out.println("<p>Folder created</p>"); // выводим информирующее сообщение
-				}
-
-				out.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
 			} else {
 				out.println("<p>Bad login</p>");
 				out.println("<a href=\"" + request.getContextPath() + "/\">Go to start page</a>");
@@ -239,33 +244,37 @@ public class FolderController {
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (user_id != -1) {
-
-				if (folderRepository.getCurrent(user_id) != null) {
-					Folder par; // искомая папка
-					par = folderRepository.findFolder(folname, folderRepository.getCurrent(user_id), user_id);
-					if (par == null) {
-						writer.println("<p>Folder not deleted</p>"); // выводим информирующее сообщение
+				
+				if(folname.equals(null)) {
+					response.sendRedirect(request.getContextPath() + "/");
+				}else {
+					if (folderRepository.getCurrent(user_id) != null) {
+						Folder par; // искомая папка
+						par = folderRepository.findFolder(folname, folderRepository.getCurrent(user_id), user_id);
+						if (par == null) {
+							writer.println("<p>Folder not deleted</p>"); // выводим информирующее сообщение
+						} else {
+							folderRepository.removeFolder(folname, folderRepository.getCurrent(user_id).getName(), user_id,
+									noteRepository);
+							writer.println("<p>Folder deleted</p>"); // выводим информирующее сообщение
+						}
 					} else {
-						folderRepository.removeFolder(folname, folderRepository.getCurrent(user_id).getName(), user_id,
-								noteRepository);
-						writer.println("<p>Folder deleted</p>"); // выводим информирующее сообщение
-					}
-				} else {
-					for (Folder fal : folderRepository.getFolders(user_id)) {
-						if (fal.getName().equals(folname)) {
-							if (fal.getParentFolder() != null) {
-								folderRepository.removeFolder(folname, fal.getParentFolder().getName(), user_id,
-										noteRepository);
-							} else {
-								folderRepository.removeFolder(folname, null, user_id, noteRepository);
+						for (Folder fal : folderRepository.getFolders(user_id)) {
+							if (fal.getName().equals(folname)) {
+								if (fal.getParentFolder() != null) {
+									folderRepository.removeFolder(folname, fal.getParentFolder().getName(), user_id,
+											noteRepository);
+								} else {
+									folderRepository.removeFolder(folname, null, user_id, noteRepository);
+								}
+								writer.println("<p>Folder deleted<p>"); // выводим информирующее сообщение
+								break;
 							}
-							writer.println("<p>Folder deleted<p>"); // выводим информирующее сообщение
-							break;
 						}
 					}
-				}
 
-				writer.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+					writer.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+				}
 			}
 			
 			writer.println("</body></html>");
