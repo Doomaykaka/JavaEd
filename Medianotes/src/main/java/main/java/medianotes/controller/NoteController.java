@@ -164,7 +164,7 @@ public class NoteController {
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (user_id != -1) {
-				if(notename.equals(null)||notestatus.equals(null)) {
+				if(notename.equals(null)||notename.equals("")||notename.replaceAll(" ","").equals("")||notename.replaceAll("	","").equals("")||notestatus.equals(null)||notestatus.equals("")||notestatus.replaceAll(" ","").equals("")||notestatus.replaceAll("	","").equals("")) {
 					response.sendRedirect(request.getContextPath() + "/");
 				}else {
 				
@@ -244,7 +244,7 @@ public class NoteController {
 
 			if (user_id != -1) {
 				
-				if(!(notename.equals(null))&&!(noteauthor.equals(null))) {
+				if(!(notename.equals(null))&&!(noteauthor.equals(null))&&!notename.equals("")&&!notename.replaceAll(" ","").equals("")&&!notename.replaceAll("	","").equals("")&&!noteauthor.equals("")&&!noteauthor.replaceAll(" ","").equals("")&&!noteauthor.replaceAll("	","").equals("")) {
 					Folder falderRes = new Folder("", null, user_id);
 
 					boolean res = false; // ищем такую папку и в случае удачи копируем объект
@@ -335,7 +335,7 @@ public class NoteController {
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (user_id != -1) {
-				if((notename.equals(null))||(noteauthor.equals(null)||(notetext.equals(null)))) {
+				if(notename.equals(null)||noteauthor.equals(null)||notetext.equals(null)||notename.equals("")||notename.replaceAll(" ","").equals("")||notename.replaceAll("	","").equals("")||noteauthor.equals("")||noteauthor.replaceAll(" ","").equals("")||noteauthor.replaceAll("	","").equals("")||notetext.equals("")||notetext.replaceAll(" ","").equals("")||notetext.replaceAll("	","").equals("")) {
 					response.sendRedirect(request.getContextPath() + "/");
 				}else {
 					Folder falderRes = new Folder("", null, user_id);
@@ -390,7 +390,7 @@ public class NoteController {
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (CheckLogin(req) != -1) {
-				if(name.equals(null)) {
+				if(name.equals(null)||name.equals("")||name.replaceAll(" ","").equals("")||name.replaceAll("	","").equals("")) {
 					resp.sendRedirect(req.getContextPath() + "/");
 				}else {
 					writer.println("<h2>Delete note?</h2>");
@@ -425,11 +425,15 @@ public class NoteController {
 			writer.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (user_id != -1) {
-				noteRepository.remove(name, user_id); // удаляем записку по полученному имени
+				if(name.equals(null)||name.equals("")||name.replaceAll(" ","").equals("")||name.replaceAll("	","").equals("")) {
+					response.sendRedirect(request.getContextPath() + "/");
+				}else {
+					noteRepository.remove(name, user_id); // удаляем записку по полученному имени
 
-				writer.println("<p>Note deleted</p>"); // выводим информирующее сообщение
+					writer.println("<p>Note deleted</p>"); // выводим информирующее сообщение
 
-				writer.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+					writer.println("<a href=\"" + request.getContextPath() + "/menu\">Go to menu</a>");
+				}
 			}
 			
 			writer.println("</body></html>");

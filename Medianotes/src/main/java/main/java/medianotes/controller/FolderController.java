@@ -152,7 +152,7 @@ public class FolderController {
 			out.println("<style> body { background: #4e5f8f; color: #ff713d;  }A{ color: white;}</style>");
 
 			if (user_id != -1) {
-				if(folname.equals(null)) {
+				if((folname.equals(null))||folname.equals("")||folname.replaceAll(" ","").equals("")||folname.replaceAll("	","").equals("")) {
 					response.sendRedirect(request.getContextPath() + "/");
 				}else {
 					boolean res2 = true; // ищем такую папку и в случае отсутствия продолжаем работу
@@ -245,7 +245,7 @@ public class FolderController {
 
 			if (user_id != -1) {
 				
-				if(folname.equals(null)) {
+				if((folname.equals(null))||folname.equals("")||folname.replaceAll(" ","").equals("")||folname.replaceAll("	","").equals("")) {
 					response.sendRedirect(request.getContextPath() + "/");
 				}else {
 					if (folderRepository.getCurrent(user_id) != null) {
