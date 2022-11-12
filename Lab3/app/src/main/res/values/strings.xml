@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Космодром "Байконур"</string>
+    <string name="java">быстро учится</string>
+    <string name="kotlin">умело летает</string>
+    <string name="textview">Выберите прилагательное: </string>
+    <string name="textview2">Выберите существительное: </string>
+    <string name="textview3">Выберите наречие: </string>
+    <string name="textview4">Вывод построенного предложения:  </string>
+    <string name="button">Построить предложение</string>>
+</resources>
