@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableRow>
+
+        <EditText
+            android:id="@+id/nameBox"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:inputType="text"
+            android:hint="@string/nameBox"
+            android:textColorHint="#757575" />
+
+        <EditText
+            android:id="@+id/yearBox"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/yearBox"
+            android:inputType="numberDecimal"
+            android:textColorHint="#757575"
+            android:autofillHints="" />
+    </TableRow>
+    <TableRow>
+
+        <EditText
+            android:id="@+id/phoneBox"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/phoneBox"
+            android:inputType="phone"
+            android:textColorHint="#757575"
+            tools:ignore="TouchTargetSizeCheck"
+            android:autofillHints="" />
+
+        <EditText
+            android:id="@+id/countBox"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/countBox"
+            android:inputType="number"
+            android:textColorHint="#757575"
+            tools:ignore="TouchTargetSizeCheck"
+            android:autofillHints="" />
+    </TableRow>
+    <TableRow>
+
+        <EditText
+            android:id="@+id/rankBox"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/rankBox"
+            android:inputType="text"
+            android:textColorHint="#757575"
+            tools:ignore="TouchTargetSizeCheck"
+            android:autofillHints="" />
+    </TableRow>
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="saveData"
+        android:text="@string/saveButton"/>
+
+    <TextView
+        android:id="@+id/dataView"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:textSize="18sp"/>
+    <Button
+        android:id="@+id/getButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/getButton"
+        android:onClick="getData"/>
+
+</TableLayout>

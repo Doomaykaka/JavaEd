@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">SSP4</string>
+    <string name="countBox">Введите число операций</string>
+    <string name="yearBox">Введите возраст</string>
+    <string name="phoneBox">Введите номер</string>
+    <string name="saveButton">Сохранить число операций</string>
+    <string name="getButton">Получить данные</string>
+    <string name="rankBox">Введите должность</string>
+    <string name="nameBox">Введите имя</string>
+    <string name="backView">Назад</string>
+    <string name="CanselView">Отмена</string>
+    <string name="smsSend">Отправить сообщение</string>
+    <string name="smstext">Введите текст смс</string>
+    <string name="messageview">Показать сообщение и номер</string>
+    <string name="callmsg">Звонок (напрямую)</string>
+</resources>
