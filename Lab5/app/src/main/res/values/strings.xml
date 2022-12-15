@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Lab5</string>
+    <string name="editname">Name</string>
+    <string name="editbutton">EDIT</string>
+    <string name="roundbutton">ROUND</string>
+    <string name="upperbutton">UPPER</string>
+    <string name="filterbutton">FILTER</string>
+</resources>
