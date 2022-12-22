@@ -1,0 +1,14 @@
+testMap2.txt
+NonCollision ObjectBackGround 0 0 1024 1024 fly.png avtomobil-zaveli-i-gazuyut.wav 0 false false
+NonCollision ObjectBackGround2 1024 0 1024 1024 fly.png avtomobil-zaveli-i-gazuyut.wav 0 false false
+NonCollision ObjectBackGround3 2048 0 1024 1024 fly.png avtomobil-zaveli-i-gazuyut.wav 0 false false
+Object ObjectFloor 0 725 1024 20 floor.png avtomobil-zaveli-i-gazuyut.wav 0 true false
+Object ObjectBlock 500 0 200 200 box.png avtomobil-zaveli-i-gazuyut.wav 1 true false
+Object ObjectFloor1 1025 725 1024 20 floor.png avtomobil-zaveli-i-gazuyut.wav 0 true false
+Object ObjectFloor2 2050 725 1024 20 floor.png avtomobil-zaveli-i-gazuyut.wav 0 true false
+Object ObjectWall1 0 256 50 1024 wall.png avtomobil-zaveli-i-gazuyut.wav 0 true false
+Trigger TestTrigger 600 200 200 200 null.png leg.wav 0 false false ONPLAYERINPLACE PLAYSOUND w.png 0
+Trigger TestTrigger2 200 200 200 200 null.png takeDamage.wav 0 false false ONPLAYERINPLACE PLAYSOUND w.png 0
+Trigger TestTrigger3 0 0 1 1 null.png takeDamage.wav 0 false false ONTIMER PLAYSOUND w.png 9999900000000
+Trigger TestTrigger4 2500 425 100 100 null.png takeDamage.wav 0 false false ONPLAYERINPLACE ISFINAL w.png 0
+Enemy newEnemy 1500 325 400 400 enemy.png avtomobil-zaveli-i-gazuyut.wav 0 true true 100 200 4 10 +x=1,d=0|+x=1,d=0|+x=1,d=0|+x=1,d=0|+y=1,d=0|+y=1,d=0|+y=1,d=0|+y=1,d=0|-x=1,d=0|-x=1,d=0|-x=1,d=0|-x=1,d=0|-y=1,d=0|-y=1,d=0|-y=1,d=0|-y=1,d=1

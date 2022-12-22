@@ -1,0 +1,2 @@
+testMap2
+NonCollision ObjectBackGround 0 0 1024 1024 fly.png avtomobil-zaveli-i-gazuyut.wav 0 false false
