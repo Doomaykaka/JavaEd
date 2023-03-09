@@ -33,6 +33,8 @@ public class menuController {
 	// проверяем данные аккаунта пользователя
 	private String[] CheckLogin(HttpServletRequest req) throws IOException {
 		int status = -1;
+		
+		String[] data = new String[2];
 
 		Cookie[] cookies = req.getCookies();
 		String cookieName1 = "user";
@@ -53,16 +55,14 @@ public class menuController {
 					cookieid = c;
 				}
 			}
+			
+			status = Authentication.findAccount(cookieLogin.getValue() + " " + cookiepassword.getValue());
+			
+			int user_id = Integer.parseInt(cookieid.getValue());
+			
+			data[0] = Integer.toString(status);
+			data[1] = Integer.toString(user_id);
 		}
-
-		status = Authentication.findAccount(cookieLogin.getValue() + " " + cookiepassword.getValue());
-		
-		int user_id = Integer.parseInt(cookieid.getValue());
-		
-		String[] data = new String[2];
-		
-		data[0] = Integer.toString(status);
-		data[1] = Integer.toString(user_id);
 
 		return data;
 	}

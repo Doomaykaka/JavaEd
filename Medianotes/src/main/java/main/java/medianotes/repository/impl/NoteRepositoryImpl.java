@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,6 +76,8 @@ public class NoteRepositoryImpl implements NoteRepository, Serializable {
 			try {
 				FolderRepository folderRepository = new FolderRepositoryImpl(); //создаём объект интерфейса для хранения запсок
 				
+				String query = "";
+				
 				String name = note.getName().toUpperCase();
 				String par_fol = "";
 				if(note.getParentFolder()==null) {
@@ -88,25 +90,34 @@ public class NoteRepositoryImpl implements NoteRepository, Serializable {
 				String text = note.getText();
 				String author = note.getAuthor();
 				String cr_date = note.getCreationDate().toString();
-				Statement st1 = db.createStatement();
+				query = "SELECT * FROM \"Notes\" WHERE id=?";
+				PreparedStatement st1 = db.prepareStatement(query);
+				st1.setInt(1, 0);
 				System.out.println("name - " + name + " pf - " + par_fol + " text - " + text + " author - " + author
 						+ " cr date - " + cr_date);
 				ResultSet rs1;
 				boolean getId = true;
 				int count = 0;
 				while(getId) {
-					rs1 = st1.executeQuery("SELECT * FROM \"Notes\" WHERE id="+count);
+					rs1 = st1.executeQuery();
+					st1.setInt(1, count);
 					if (!rs1.next()){
 						getId=false;
 					}else {
 						count=count+1;
 					}
 				}
-				Statement st = db.createStatement();
-				st.executeUpdate("INSERT INTO \"Notes\" (id,parent_folder,name,text,author,creation_date,author_id)"
-								+ "VALUES (" + Integer.toString(count) + ", '" + par_fol + "', '" + name + "', '"
-								+ text + "', '" + author + "', '" + cr_date + "',"+Integer.toString(user_id_in)+")");
+				PreparedStatement st = db.prepareStatement("INSERT INTO \"Notes\" (id,parent_folder,name,text,author,creation_date,author_id)"
+						+ "VALUES (?, ?, ?, ?, ?, ?, ?)");
+				st.setInt(1,count);
+				st.setString(2, par_fol);
+				st.setString(3, name);
+				st.setString(4, text);
+				st.setString(5, author);
+				st.setString(6, cr_date);
+				st.setInt(7, user_id_in);
 				
+				st.executeUpdate();			
 			} catch (SQLException e) {
 				e.printStackTrace();
 			} catch (Exception a) {
@@ -138,10 +149,18 @@ public class NoteRepositoryImpl implements NoteRepository, Serializable {
 				String cr_date = note.getCreationDate().toString();
 				String nt_status = note.getStatus();
 				
-				Statement st = db.createStatement();
-				st.executeUpdate("UPDATE \"Notes\" SET parent_folder='" + par_fol + "',name='"+name+"'"
-								+ ",text='" + text + "',author='" + author + "', creation_date='" + cr_date + "',status='"+nt_status+"'"
-								+ " WHERE name='"+name+"'");
+				String query = "UPDATE \"Notes\" SET parent_folder=?,name=?,text=?,author=?, creation_date=?,status=? WHERE name=?";
+				
+				PreparedStatement st = db.prepareStatement(query);
+				st.setString(1, par_fol);
+				st.setString(2, name);
+				st.setString(3, text);
+				st.setString(4, author);
+				st.setString(5, cr_date);
+				st.setString(6, nt_status);
+				st.setString(7, name);
+				
+				st.executeUpdate();
 				
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -160,8 +179,11 @@ public class NoteRepositoryImpl implements NoteRepository, Serializable {
 		// запрашиваем данные о записках
 		if (connection_status) {
 			try {
-				Statement st = db.createStatement();
-				ResultSet rs = st.executeQuery("SELECT * FROM \"Notes\" WHERE author_id="+user_id_in);
+				String query = "SELECT * FROM \"Notes\" WHERE author_id=?";
+				
+				PreparedStatement st = db.prepareStatement(query);
+				st.setInt(1, user_id_in);
+				ResultSet rs = st.executeQuery();
 				ResultSet vl = rs;
 				String nm;
 				String pf;
@@ -200,8 +222,13 @@ public class NoteRepositoryImpl implements NoteRepository, Serializable {
 		// удаляем данные о записке
 		if (connection_status) {
 			try {
-				Statement st = db.createStatement();
-				st.executeUpdate("DELETE FROM \"Notes\" WHERE name='" + name + "' AND author_id="+Integer.toString(user_id_in));
+				String query = "DELETE FROM \"Notes\" WHERE name=? AND author_id=?";
+				
+				PreparedStatement st = db.prepareStatement(query);
+				st.setString(1, name);
+				st.setInt(2, user_id_in);
+				
+				st.executeUpdate();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			} catch (Exception a) {
@@ -216,8 +243,11 @@ public class NoteRepositoryImpl implements NoteRepository, Serializable {
 		// запрашиваем данные о репозиториях
 		if (connection_status) {
 			try {
-				Statement st = db.createStatement();
-				ResultSet rs = st.executeQuery("SELECT * FROM \"Folders\" WHERE author_id="+Integer.toString(user_id_in));
+				String query = "SELECT * FROM \"Folders\" WHERE author_id=?";
+				
+				PreparedStatement st = db.prepareStatement(query);
+				st.setInt(1, user_id_in);
+				ResultSet rs = st.executeQuery();
 				ResultSet vl = rs;
 				String nm;
 				String pf;

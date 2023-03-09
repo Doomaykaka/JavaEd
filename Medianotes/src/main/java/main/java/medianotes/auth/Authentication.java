@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 //класс отвечающий за аутентификацию
 public class Authentication {
@@ -57,8 +57,10 @@ public class Authentication {
 		// запрашиваем данные аккаунтов
 		if (connection_status) {
 			try {
-				Statement st = db.createStatement();
-				ResultSet rs = st.executeQuery("SELECT * FROM \"Auths\"");
+				String query = "SELECT * FROM \"Auths\"";
+				
+				PreparedStatement st = db.prepareStatement(query);
+				ResultSet rs = st.executeQuery();
 				ResultSet vl = rs;
 				List<String> allRows = new ArrayList<String>();
 				String acc;
@@ -69,10 +71,10 @@ public class Authentication {
 					allRows.add(acc + " " + id);
 				}
 				vLOGINandPASSWORDandID = allRows.toArray(new String[0]);
+				db.close();
 			} catch (Exception e) {
 				e.printStackTrace();
-			}
-
+			}		
 		}
 	}
 
@@ -95,6 +97,9 @@ public class Authentication {
 	}
 
 	// метод класса отвечающий за регистрацию аккаунта в бд
+	/**
+	 * @param accdat
+	 */
 	public static void registerAccount(String accdat) {
 		boolean connection_status = false; // логическая переменная хранящая статус подключения к бд
 		Connection db = getConnection(); // объект подключения
@@ -105,20 +110,25 @@ public class Authentication {
 		// отправляем данные аккаунта
 		if (connection_status) {
 			try {
-				Statement st1 = db.createStatement();
-				ResultSet rs1 = st1.executeQuery("SELECT count(*) FROM \"Auths\"");
+				String query = "SELECT count(*) FROM \"Auths\"";
+				
+				PreparedStatement st1 = db.prepareStatement(query);
+				ResultSet rs1 = st1.executeQuery();
 				if (rs1.next()) {
 					int count = rs1.getInt(1);
-					Statement st2 = db.createStatement();
-					st2.addBatch("INSERT INTO \"Auths\" (id,login_password)" + "VALUES (" + Integer.toString(count)
-							+ ",\'" + accdat + "\')");
-					st2.executeBatch();
+					query = "INSERT INTO \"Auths\" (id,login_password)VALUES (?,?)";
+					PreparedStatement st2 = db.prepareStatement(query);
+					st2.setInt(1, count);
+					st2.setString(2,accdat);
+					st2.executeUpdate();
 				}
+				
+				db.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			} catch (Exception a) {
 				a.printStackTrace();
-			}
+			}		
 		}
 	}
 	

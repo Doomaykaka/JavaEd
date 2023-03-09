@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -77,13 +77,16 @@ public class FolderRepositoryImpl implements FolderRepository, Serializable {
 		final Set<Folder> folders = new HashSet<>(); // множество
 		final Set<Folder> foldersN = new HashSet<>(); // множество
 		mp=new HashSet<>(); // множество
-		Statement st = null;
+		PreparedStatement st = null;
 		int count=0;
 		// запрашиваем данные о репозиториях
 		if (connection_status) {
 			try {
-				st = db.createStatement();
-				ResultSet vl = st.executeQuery("SELECT * FROM \"Folders\" WHERE author_id="+Integer.toString(user_id_in));
+				String query = "SELECT * FROM \"Folders\" WHERE author_id=?";
+				
+				st = db.prepareStatement(query);
+				st.setInt(1, user_id_in);
+				ResultSet vl = st.executeQuery();
 				while (vl.next()) {
 					final String pf = vl.getString("parent_folder");
 					String nm;
@@ -95,7 +98,10 @@ public class FolderRepositoryImpl implements FolderRepository, Serializable {
 				}
 				vl.close();
 				
-				ResultSet rs2 = st.executeQuery("SELECT count(*) FROM \"Folders\" WHERE author_id="+Integer.toString(user_id_in));
+				query = "SELECT count(*) FROM \"Folders\" WHERE author_id=?";
+				st = db.prepareStatement(query);
+				st.setInt(1, user_id_in);
+				ResultSet rs2 = st.executeQuery();
 				while (rs2.next()) {
 					count = rs2.getInt(1);
 				}
@@ -116,12 +122,15 @@ public class FolderRepositoryImpl implements FolderRepository, Serializable {
 	}
 	
 	//  метод рекурсивного добавления папок 
-	public Set<Folder> addFoldersRec(Statement st,Set<Folder> foldersPrevios,int user_id_in,int size) {
+	public Set<Folder> addFoldersRec(PreparedStatement st,Set<Folder> foldersPrevios,int user_id_in,int size) {
 		Set<Folder> folders = new HashSet<>(); // множество	
 		
 		try {
-			st = db.createStatement();
-			ResultSet rs = st.executeQuery("SELECT * FROM \"Folders\" WHERE author_id="+Integer.toString(user_id_in));
+			String query = "SELECT * FROM \"Folders\" WHERE author_id=?";
+			
+			st = db.prepareStatement(query);
+			st.setInt(1, user_id_in);
+			ResultSet rs = st.executeQuery();
 			while (rs.next()) {
 				final String pf = rs.getString("parent_folder");
 				String nm;
@@ -160,26 +169,42 @@ public class FolderRepositoryImpl implements FolderRepository, Serializable {
 		// добавляем данные о репозиториях
 		if (connection_status) {
 			try {
+				String query = "SELECT * FROM \"Folders\" WHERE id=?";
+				
 				int count = 0;
 				name = name.toUpperCase();
-				Statement st1 = db.createStatement();
+				PreparedStatement st1 = db.prepareStatement(query);
+				st1.setInt(1, count);
 				ResultSet rs1;
 				boolean getId = true;
 				while(getId) {
-					rs1 = st1.executeQuery("SELECT * FROM \"Folders\" WHERE id="+count);
+					rs1 = st1.executeQuery();
 					if (!rs1.next()){
 						getId=false;
 					}else {
 						count=count+1;
+						st1.setInt(1, count);
 					}
 				}
-				Statement st = db.createStatement();
+				
+				
 				if(parentFolder==null){
-					st.executeUpdate("INSERT INTO \"Folders\" (id,name,parent_folder,author_id)" + "VALUES ("
-							+ Integer.toString(count) + ", '" + name + "', null,"+Integer.toString(user_id_in)+")");
+					query = "INSERT INTO \"Folders\" (id,name,parent_folder,author_id)" + "VALUES (?, ?, null,?)";
+					
+					PreparedStatement st = db.prepareStatement(query);
+					st.setInt(1,count);
+					st.setString(2,name);
+					st.setInt(3, user_id_in);
+					st.executeUpdate();
 				}else {
-					st.executeUpdate("INSERT INTO \"Folders\" (id,name,parent_folder,author_id)" + "VALUES ("
-							+ Integer.toString(count) + ", '" + name + "', '" + parentFolder.getName() + "',"+Integer.toString(user_id_in)+")");
+					query = "INSERT INTO \"Folders\" (id,name,parent_folder,author_id)" + "VALUES (?, ?, ?,?)";
+					
+					PreparedStatement st = db.prepareStatement(query);
+					st.setInt(1,count);
+					st.setString(2,name);
+					st.setString(3, parentFolder.getName());
+					st.setInt(4, user_id_in);
+					st.executeUpdate();
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -196,7 +221,8 @@ public class FolderRepositoryImpl implements FolderRepository, Serializable {
 		// удаляем данные о репозиториях
 		if (connection_status) {
 			try {
-				Statement st = db.createStatement();
+				String query = "";
+				PreparedStatement st;
 				for(Note n : noteRepository.getAllNotes(user_id_in)) {
 					if(n.getParentFolder().getName().equals(name)) {
 						noteRepository.remove(n.getName(), user_id_in);
@@ -210,10 +236,22 @@ public class FolderRepositoryImpl implements FolderRepository, Serializable {
 					}
 				}
 				if(parentFolderName!=null) {
-					st.executeUpdate("DELETE FROM \"Folders\" WHERE name='" + name + "' AND parent_folder='"
-						+ parentFolderName + "' AND author_id="+Integer.toString(user_id_in));
+					query = "DELETE FROM \"Folders\" WHERE name=? AND parent_folder=? AND author_id=?";
+					
+					st = db.prepareStatement(query);
+					st.setString(1, name);
+					st.setString(2, parentFolderName);
+					st.setInt(3, user_id_in);
+					
+					st.executeUpdate();
 				}else {
-					st.executeUpdate("DELETE FROM \"Folders\" WHERE name='" + name + "' AND parent_folder ISNULL AND author_id="+Integer.toString(user_id_in));
+					query = "DELETE FROM \"Folders\" WHERE name=? AND parent_folder ISNULL AND author_id=?";
+					
+					st = db.prepareStatement(query);
+					st.setString(1, name);
+					st.setInt(2, user_id_in);
+					
+					st.executeUpdate();
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -250,12 +288,25 @@ public class FolderRepositoryImpl implements FolderRepository, Serializable {
 		// запрашиваем данные о репозиториях
 		if (connection_status) {
 			try {
-				Statement st = db.createStatement();
+				String query = "";
+				
+				PreparedStatement st;
 				ResultSet rs;
 				if(pfolder==null) {
-					rs = st.executeQuery("SELECT * FROM \"Folders\" WHERE author_id="+Integer.toString(user_id_in));
+					query = "SELECT * FROM \"Folders\" WHERE author_id=?";
+					
+					st = db.prepareStatement(query);
+					st.setInt(1, user_id_in);
+					
+					rs = st.executeQuery();
 				}else {
-					rs = st.executeQuery("SELECT * FROM \"Folders\" WHERE parent_folder='"+pfolder.getName()+"' AND author_id="+Integer.toString(user_id_in));
+					query = "SELECT * FROM \"Folders\" WHERE parent_folder=? AND author_id=?";
+					
+					st = db.prepareStatement(query);
+					st.setString(1, pfolder.getName());
+					st.setInt(2, user_id_in);
+					
+					rs = st.executeQuery();
 				}
 				
 				ResultSet vl = rs;

@@ -17,8 +17,7 @@ repositories{
 }
 
 bootJar {
-	mainClass = 'main.java.medianotes.Main'
-	baseName = 'Spring test'
+	mainClass = 'main.java.main.java.medianotes.Main'
 	version = '0.1.0'
 }
 
